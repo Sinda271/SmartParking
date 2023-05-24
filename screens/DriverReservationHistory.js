@@ -1,84 +1,75 @@
 import React, {useState, useEffect} from 'react';
 import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import {FontAwesome, MaterialIcons} from '@expo/vector-icons';
-import {theme} from '../core/theme';
-import {resolve} from 'path';
+import axios from 'axios';
+import {
+  URL,
+  DriverAllReservationsRoute,
+  DeleteReservationRoute,
+} from '../core/routes';
+import core from '../core';
 
 export default function DriverReservations({navigation}) {
-  const [reservations, setReservations] = useState('');
+  const [reservations, setReservations] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch(
-        'http://192.168.42.157:3001/DriverAllReservations',
-      );
-      const result = await response.json();
-      //console.log(result)
-      setReservations(result);
+  const getDriverAllReservations = async () => {
+    try {
+      axios({
+        method: 'get',
+        url: URL + DriverAllReservationsRoute,
+      }).then(response => {
+        console.log(response);
+        setReservations(response);
+      });
+    } catch (error) {
+      console.error(error);
     }
-    fetchData();
+  };
+  useEffect(() => {
+    getDriverAllReservations();
   }, []);
 
   const wait = timeout => {
     return new Promise(resolve => setTimeout(resolve, timeout));
   };
-  const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    const response = await fetch(
-      'http://192.168.42.157:3001/DriverAllReservations',
-    );
-    const result = await response.json();
-    //console.log(result)
-    setReservations(result);
-
+    getDriverAllReservations();
     wait(2000).then(() => setRefreshing(false));
   }, []);
 
-  var data = [];
-
-  for (let i = 0; i < reservations.length; i++) {
-    data.push(Object.values(reservations[i]));
-  }
-  console.log(data);
-
-  var initList = [];
   var ResList = [];
-
-  for (let i = 0; i < data.length; i++) {
-    initList.push([
-      data[i][0],
-      data[i][1].substr(0, 10),
-      data[i][2].substr(0, 5),
-      data[i][3],
-      data[i][4],
-      data[i][5],
-    ]);
-  }
-  //console.log(initList)
-  ResList = initList.map(key => {
+  ResList = reservations.map(key => {
     const onDeletePressed = async () => {
-      await fetch('http://192.168.42.157:3001/DeleteReservation', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          resId: key[4],
-        }),
-      });
+      try {
+        axios({
+          method: 'post',
+          url: URL + DeleteReservationRoute,
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          data: {
+            resId: key[4],
+          },
+        }).then(response => {
+          console.log(response);
+        });
+      } catch (error) {
+        console.error(error);
+      }
     };
 
     return (
@@ -94,10 +85,10 @@ export default function DriverReservations({navigation}) {
           {key[3] === 1 ? (
             <TouchableOpacity></TouchableOpacity>
           ) : (
-            <View style={{flexDirection: 'row'}}>
+            <View style={styles.flexrow}>
               <TouchableOpacity
                 onPress={() =>
-                  navigation.navigate('QrMapScreenM1', {
+                  navigation.navigate('QrMapScreen', {
                     itemId: 3,
                     date: key[1],
                     time: key[2],
@@ -106,11 +97,11 @@ export default function DriverReservations({navigation}) {
                     cin: key[5],
                   })
                 }
-                style={{marginEnd: 10}}>
+                style={styles.margin}>
                 <MaterialIcons
                   name="gps-fixed"
                   size={25}
-                  color={theme.colors.tertiary}
+                  color={core.theme.colors.tertiary}
                 />
               </TouchableOpacity>
 
@@ -121,13 +112,21 @@ export default function DriverReservations({navigation}) {
                     index: key[4],
                   })
                 }>
-                <Feather name="edit" color={theme.colors.primary} size={25} />
+                <Feather
+                  name="edit"
+                  color={core.theme.colors.primary}
+                  size={25}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
                   onDeletePressed();
                 }}>
-                <Feather name="trash-2" color={theme.colors.error} size={25} />
+                <Feather
+                  name="trash-2"
+                  color={core.theme.colors.error}
+                  size={25}
+                />
               </TouchableOpacity>
             </View>
           )}
@@ -139,9 +138,9 @@ export default function DriverReservations({navigation}) {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={{alignItems: 'flex-start', marginTop: 35, marginStart: 30}}
+        style={styles.touchable}
         onPress={navigation.openDrawer}>
-        <FontAwesome name="bars" size={24} color={theme.colors.surface} />
+        <FontAwesome name="bars" size={24} color={core.theme.colors.surface} />
       </TouchableOpacity>
       <View style={styles.header}>
         <Text style={styles.text_header}>My Reservations </Text>
@@ -155,22 +154,6 @@ export default function DriverReservations({navigation}) {
           }>
           {ResList}
         </ScrollView>
-        {/*
-            <TouchableOpacity onPress={addData.bind(state)} style={styles.addButton}>
-                <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
-        <View>
-            <TextInput
-                style={styles.textInput}
-                onChangeText={(dataText)=>setState({dataArray:[], dataText: dataText})}
-                value={state.dataText}
-                placeholder='test Reservation'
-                placeholderTextColor='grey'
-                underlineColorAndroid='transparent'
-                >
-
-            </TextInput>
-        </View>*/}
       </Animatable.View>
     </View>
   );
@@ -179,7 +162,7 @@ export default function DriverReservations({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
   },
   container1: {
     borderRadius: 30,
@@ -195,7 +178,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    //paddingVertical:150,
     paddingHorizontal: 10,
   },
 
@@ -228,7 +210,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     color: 'grey',
     padding: 20,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
     borderTopWidth: 2,
     borderTopColor: '#ededed',
   },
@@ -249,13 +231,13 @@ const styles = StyleSheet.create({
   dataText: {
     paddingLeft: 20,
     borderLeftWidth: 10,
-    borderLeftColor: theme.colors.error,
+    borderLeftColor: core.theme.colors.error,
   },
   dataDelete: {
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.error,
+    backgroundColor: core.theme.colors.error,
     padding: 10,
     top: 10,
     bottom: 10,
@@ -269,7 +251,7 @@ const styles = StyleSheet.create({
     zIndex: 11,
     right: 20,
     bottom: 90,
-    backgroundColor: theme.colors.error,
+    backgroundColor: core.theme.colors.error,
     width: 30,
     height: 30,
     borderRadius: 50,
@@ -297,4 +279,7 @@ const styles = StyleSheet.create({
     width: 10,
     padding: 10,
   },
+  flexrow: {flexDirection: 'row'},
+  margin: {marginEnd: 10},
+  touchable: {alignItems: 'flex-start', marginTop: 35, marginStart: 30},
 });

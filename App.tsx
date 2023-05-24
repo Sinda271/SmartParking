@@ -1,118 +1,89 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
+import {Provider} from 'react-native-paper';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+  StartScreen,
+  LoginScreen,
+  SignupMode,
+  SplashScreen,
+  DriverSignUp,
+  AgentSignUp,
+  AdminSignUp,
+  ResetPasswordScreen,
+  DriverDashboard,
+  AgentDashboard,
+  DriverReservation,
+  QrMapScreen,
+  LoginScreenNoGoBack,
+  DriverPayment,
+  Qrcode,
+  AdminDashboard,
+  ManageParkings,
+  ManageAgents,
+  Fidelity,
+  MessagesScreen,
+  ChatScreen,
+  ModifyReservation,
+  AddParking,
+} from './screens';
+import core from './core';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const Stack = createStackNavigator();
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+export default function App() {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+    <Provider theme={core.theme}>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="SplashScreen"
+          screenOptions={{
+            headerShown: false,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          <Stack.Screen name="SplashScreen" component={SplashScreen} />
+          {/* <Stack.Screen name="StartScreen" component={StartScreen} />
+          <Stack.Screen name="LoginScreen" component={LoginScreen} />
+          <Stack.Screen name="SignupMode" component={SignupMode} />
+          <Stack.Screen name="DriverSignUp" component={DriverSignUp} />
+          <Stack.Screen name="AgentSignUp" component={AgentSignUp} />
+          <Stack.Screen name="AdminSignUp" component={AdminSignUp} />
+          <Stack.Screen
+            name="ResetPasswordScreen"
+            component={ResetPasswordScreen}
+          />
+          <Stack.Screen name="DriverDashboard" component={DriverDashboard} />
+          <Stack.Screen name="AgentDashboard" component={AgentDashboard} />
+          <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+          <Stack.Screen
+            name="DriverReservation"
+            component={DriverReservation}
+          />
+          <Stack.Screen name="QrMapScreenM1" component={QrMapScreen} />
+          <Stack.Screen name="DriverPayment" component={DriverPayment} />
+          <Stack.Screen name="Qrcode" component={Qrcode} />
+          <Stack.Screen
+            name="LoginScreenNoGoBack"
+            component={LoginScreenNoGoBack}
+          />
+          <Stack.Screen name="ManageAgents" component={ManageAgents} />
+          <Stack.Screen name="ManageParkings" component={ManageParkings} />
+          <Stack.Screen name="FidelityPts" component={Fidelity} />
+          <Stack.Screen name="ReviewsScreen" component={MessagesScreen} />
+          <Stack.Screen
+            name="ChatScreen"
+            component={ChatScreen}
+            options={({route}) => ({
+              title: route.params.userName,
+              headerBackTitleVisible: false,
+            })}
+          />
+          <Stack.Screen
+            name="ModifyReservation"
+            component={ModifyReservation}
+          />
+          <Stack.Screen name="AddParking" component={AddParking} /> */}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;

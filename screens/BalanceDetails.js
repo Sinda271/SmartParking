@@ -7,7 +7,7 @@ import {
   View,
   ScrollView,
 } from 'react-native';
-import FontAwesome from '@expo/vector-icons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {Table, Row, Rows} from 'react-native-table-component';
 import axios from 'axios';
 import components from '../components';

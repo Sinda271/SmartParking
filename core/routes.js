@@ -15,6 +15,25 @@ const AgentBalanceDetailsRoute = '/AgentBalanceDetails';
 const AdminChatScreenRoute = '/AdminChatScreen ';
 const AdminReplyRoute = '/AdminReply';
 const DriverProfilePersonalInfoRoute = '/DriverProfilePersonalInfo';
+const DriverHomeParkingInfoRoute = '/DriverHomeParkingInfo';
+const AdminReplyNotifRoute = '/AdminReplyNotif';
+const MakePaymentRoute = '/MakePayment';
+const TotalLoyaltyPtsRoute = '/TotalLoyaltyPts';
+const PaymentHistoryRoute = '/PaymentHistory';
+const DriverProfileCarFeaturesRoute = '/DriverProfileCarFeatures';
+const DriverAllReservationsRoute = '/DriverAllReservations';
+const DeleteReservationRoute = '/DeleteReservation';
+const DriverCinRoute = '/DriverCinRoute';
+const MakeReservationRoute = '/MakeReservation';
+const DriverPostRoute = '/DriverPost';
+const DriverSupportReviewsRoute = '/DriverSupportReviews';
+const LoginRoute = '/Login';
+const AdminAgentsTableRoute = '/AdminAgentsTable';
+const AdminReviewListRoute = '/AdminReviewList';
+const ReservationLongLatRoute = '/ReservationLongLat';
+const AdminParkingsTableRoute = '/AdminParkingsTable';
+const ParkingDeleteRoute = '/ParkingDelete';
+const AdminDeleteAgentRoute = '/AdminDeleteAgent';
 export {
   URL,
   addParkingRoute,
@@ -32,4 +51,23 @@ export {
   AdminChatScreenRoute,
   AdminReplyRoute,
   DriverProfilePersonalInfoRoute,
+  DriverHomeParkingInfoRoute,
+  AdminReplyNotifRoute,
+  MakePaymentRoute,
+  TotalLoyaltyPtsRoute,
+  PaymentHistoryRoute,
+  DriverProfileCarFeaturesRoute,
+  DriverAllReservationsRoute,
+  DeleteReservationRoute,
+  DriverCinRoute,
+  MakeReservationRoute,
+  DriverPostRoute,
+  DriverSupportReviewsRoute,
+  LoginRoute,
+  AdminAgentsTableRoute,
+  AdminReviewListRoute,
+  ReservationLongLatRoute,
+  AdminParkingsTableRoute,
+  ParkingDeleteRoute,
+  AdminDeleteAgentRoute,
 };

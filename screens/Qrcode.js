@@ -1,29 +1,22 @@
-import React, {Component} from 'react';
-import {render} from 'react-dom';
-import {Ionicons, MaterialIcons} from '@expo/vector-icons';
+import React from 'react';
 import {
   StyleSheet,
   View,
-  Button,
-  TextInput,
   Text,
   Image,
   TouchableWithoutFeedback,
   TouchableOpacity,
 } from 'react-native';
-
 import QRCode from 'react-native-qrcode-svg';
-import {WebView} from 'react-native-webview';
-import {Buffer} from 'buffer';
-import Animated from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
-import {theme} from '../core/theme';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import core from '../core';
 
-export default class QRcodeM1 extends React.Component {
+export default class QRcode extends React.Component {
   constructor(props) {
     super(props);
   }
-
   state = {
     id: this.props.route.params.cin,
     licencePlate: this.props.route.params.mat,
@@ -31,7 +24,6 @@ export default class QRcodeM1 extends React.Component {
     time: this.props.route.params.time,
     reserId: this.props.route.params.reserId,
   };
-
   renderInner = () => (
     <View style={styles.panel}>
       <Text style={styles.panelTitle}> QRCode</Text>
@@ -39,7 +31,7 @@ export default class QRcodeM1 extends React.Component {
 
       <View style={styles.panelButton}>
         <QRCode
-          style={{alignItems: 'center'}}
+          style={styles.qrcode}
           value={JSON.stringify(this.state)}
           size={300}
           bgColor="black"
@@ -58,53 +50,32 @@ export default class QRcodeM1 extends React.Component {
   );
 
   bs = React.createRef();
-  //fall= new Animated.value(1)
 
   render() {
     const {navigate} = this.props.navigation;
-    const {goBack} = this.props.navigation;
     return (
       <View style={styles.container}>
-        <View style={{flexDirection: 'row', width: 400, alignSelf: 'center'}}>
+        <View style={styles.outerview}>
           <TouchableOpacity
-            style={{
-              borderRadius: 50,
-              width: 50,
-              height: 50,
-              marginTop: 150,
-              backgroundColor: theme.colors.primary,
-              alignSelf: 'flex-start',
-              marginStart: 30,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            style={styles.touchable1}
             onPress={() => {
               navigate('QrMapScreenM1');
             }}>
             <Ionicons
               name="chevron-back"
               size={24}
-              color={theme.colors.surface}
+              color={core.theme.colors.surface}
             />
           </TouchableOpacity>
           <TouchableOpacity
-            style={{
-              borderRadius: 50,
-              width: 50,
-              height: 50,
-              marginTop: 150,
-              backgroundColor: theme.colors.primary,
-              marginStart: 240,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            style={styles.touchable2}
             onPress={() => {
               navigate('DriverPayment', {itemId: 5, pay: this.state});
             }}>
             <MaterialIcons
               name="payment"
               size={24}
-              color={theme.colors.surface}
+              color={core.theme.colors.surface}
             />
           </TouchableOpacity>
         </View>
@@ -139,10 +110,10 @@ const styles = StyleSheet.create({
   panel: {
     height: 100,
     padding: 20,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
   },
   header: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
     shadowColor: '#000000',
     paddingTop: 20,
     borderTopLeftRadius: 20,
@@ -161,11 +132,11 @@ const styles = StyleSheet.create({
   panelTitle: {
     fontSize: 27,
     height: 35,
-    color: theme.colors.surface,
+    color: core.theme.colors.surface,
   },
   panelSubtitle: {
     fontSize: 14,
-    color: theme.colors.surface,
+    color: core.theme.colors.surface,
     height: 30,
     marginTop: 5,
     marginStart: 10,
@@ -191,5 +162,28 @@ const styles = StyleSheet.create({
   map: {
     height: '100%',
     width: '100%',
+  },
+  qrcode: {alignItems: 'center'},
+  outerview: {flexDirection: 'row', width: 400, alignSelf: 'center'},
+  touchable1: {
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    marginTop: 150,
+    backgroundColor: core.theme.colors.primary,
+    alignSelf: 'flex-start',
+    marginStart: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  touchable2: {
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    marginTop: 150,
+    backgroundColor: core.theme.colors.primary,
+    marginStart: 240,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

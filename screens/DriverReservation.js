@@ -1,57 +1,73 @@
 import React, {useState, useEffect} from 'react';
 import DatePicker from 'react-native-datepicker';
 import TimePicker from 'react-native-24h-timepicker';
-import {theme} from '../core/theme';
-import {Ionicons} from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   View,
   Text,
   TextInput,
-  Dimensions,
   StyleSheet,
-  KeyboardAvoidingView,
   TouchableOpacity,
-  Image,
   Alert,
+  Platform,
 } from 'react-native';
 import {Button} from 'react-native-paper';
 import * as Animatable from 'react-native-animatable';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-
-export default function DriverReservationM1({...props}) {
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import axios from 'axios';
+import core from '../core';
+import {URL, DriverCinRoute, MakeReservationRoute} from '../core/routes';
+export default function DriverReservation({...props}) {
   const [date, setdate] = useState('');
   const [time, setTime] = useState('');
   const [licencePlate, setLicencePlate] = useState('');
   const [cin, setCin] = useState('');
-
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch('http://192.168.42.157:3001/DriverCin');
-      const result = await response.json();
-      //console.log(result)
-      setCin(result);
+  const [data, setData] = useState({
+    username: '',
+    password: '',
+    check_textInputChange: false,
+    secureTextEntry: true,
+    isValidUser: true,
+  });
+  const getDriverCin = async () => {
+    try {
+      axios({
+        method: 'get',
+        url: URL + DriverCinRoute,
+      }).then(response => {
+        console.log(response);
+        setCin(response);
+      });
+    } catch (error) {
+      console.error(error);
     }
-    fetchData();
+  };
+  useEffect(() => {
+    getDriverCin();
   }, []);
 
-  console.log(cin);
-
   const onMakeResPressed = async () => {
-    await fetch('http://192.168.42.157:3001/MakeReservation', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        cinRes: parseInt(cin),
-        dateRes: date,
-        timeRes: time,
-        MatRes: licencePlate,
-      }),
-    });
+    try {
+      axios({
+        method: 'post',
+        url: URL + MakeReservationRoute,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          cinRes: cin,
+          dateRes: date,
+          timeRes: time,
+          MatRes: licencePlate,
+        },
+      }).then(response => {
+        console.log(response);
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const onCancelTime = () => {
@@ -63,16 +79,8 @@ export default function DriverReservationM1({...props}) {
     this.TimePicker.close();
   };
 
-  const [data, setData] = React.useState({
-    username: '',
-    password: '',
-    check_textInputChange: false,
-    secureTextEntry: true,
-    isValidUser: true,
-  });
-
   const textInputChange = val => {
-    if (val.length == 11) {
+    if (val.length === 11) {
       setData({
         ...data,
         username: val,
@@ -89,15 +97,14 @@ export default function DriverReservationM1({...props}) {
     }
   };
 
-  const latidude = props.route.params.latitude;
-  const longitude = props.route.params.longitude;
-
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={{marginTop: 40, marginStart: 30}}
-        onPress={props.navigation.goBack}>
-        <Ionicons name="chevron-back" size={24} color={theme.colors.surface} />
+      <TouchableOpacity style={styles.back} onPress={props.navigation.goBack}>
+        <Ionicons
+          name="chevron-back"
+          size={24}
+          color={core.theme.colors.surface}
+        />
       </TouchableOpacity>
       <View style={styles.header}>
         <Text style={styles.text_header}>Reservation </Text>
@@ -112,8 +119,8 @@ export default function DriverReservationM1({...props}) {
           <FontAwesome
             name="car"
             size={20}
-            color={theme.colors.primary}
-            style={{paddingBottom: 10, paddingLeft: 10}}
+            color={core.theme.colors.primary}
+            style={styles.car}
           />
           <TextInput
             placeholder=" e.g. 111 TU 1111"
@@ -128,23 +135,17 @@ export default function DriverReservationM1({...props}) {
           {data.check_textInputChange ? (
             <Feather
               name="check-circle"
-              color={theme.colors.primary}
+              color={core.theme.colors.primary}
               size={20}
             />
           ) : null}
         </View>
-        <Text
-          style={[
-            styles.text_footer,
-            {
-              marginTop: 15,
-            },
-          ]}>
+        <Text style={[styles.text_footer, styles.margin]}>
           Reservation Date:
         </Text>
         <View style={styles.container1}>
           <DatePicker
-            style={{width: 200, paddingLeft: 10}}
+            style={styles.datepicker}
             date={date}
             mode="date"
             placeholder="Pick a date"
@@ -160,7 +161,7 @@ export default function DriverReservationM1({...props}) {
                 left: 0,
                 top: 4,
                 marginLeft: 0,
-                overlayColor: theme.colors.primary,
+                overlayColor: core.theme.colors.primary,
               },
               dateInput: {
                 marginLeft: 36,
@@ -173,21 +174,13 @@ export default function DriverReservationM1({...props}) {
             }}
           />
         </View>
-        <Text
-          style={[
-            styles.text_footer,
-            {
-              marginTop: 15,
-            },
-          ]}>
-          Arrival Time:
-        </Text>
+        <Text style={[styles.text_footer, styles.margin]}>Arrival Time:</Text>
         <View style={styles.container1}>
           <View style={styles.timecontainer}>
             <View style={styles.action}>
               <Feather
                 name="clock"
-                color={theme.colors.primary}
+                color={core.theme.colors.primary}
                 size={30}
                 onPress={() => this.TimePicker.open()}
               />
@@ -205,15 +198,9 @@ export default function DriverReservationM1({...props}) {
           </View>
         </View>
 
-        <View style={[styles.button, {marginButtom: 20}]}>
+        <View style={[styles.button, styles.bottom]}>
           <Button
-            style={{
-              backgroundColor: theme.colors.primary,
-              height: 50,
-              width: 250,
-              borderRadius: 20,
-              justifyContent: 'center',
-            }}
+            style={styles.but}
             onPress={() => {
               onMakeResPressed();
               Alert.alert(
@@ -229,14 +216,7 @@ export default function DriverReservationM1({...props}) {
                 ],
               );
             }}>
-            <Text
-              style={{
-                fontWeight: 'bold',
-                fontSize: 15,
-                color: theme.colors.surface,
-              }}>
-              Make Reservation
-            </Text>
+            <Text style={styles.buttext}>Make Reservation</Text>
           </Button>
         </View>
       </Animatable.View>
@@ -247,15 +227,15 @@ const styles = StyleSheet.create({
   timecontainer: {
     marginTop: Platform.OS === 'ios' ? 0 : -12,
     paddingLeft: 10,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
     borderRadius: 20,
   },
   container: {
     flex: 1,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
   },
   container1: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
   },
   header: {
     flex: 0.5,
@@ -267,7 +247,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    //paddingVertical:150,
     paddingHorizontal: 10,
   },
 
@@ -301,7 +280,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   text_footer: {
-    color: theme.colors.secondary,
+    color: core.theme.colors.secondary,
     fontSize: 15,
     fontWeight: 'bold',
     paddingVertical: 20,
@@ -317,5 +296,24 @@ const styles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? 0 : -12,
     paddingLeft: 20,
     color: '#000000',
+  },
+  back: {marginTop: 40, marginStart: 30},
+  car: {paddingBottom: 10, paddingLeft: 10},
+  margin: {
+    marginTop: 15,
+  },
+  datepicker: {width: 200, paddingLeft: 10},
+  bottom: {marginButtom: 20},
+  but: {
+    backgroundColor: core.theme.colors.primary,
+    height: 50,
+    width: 250,
+    borderRadius: 20,
+    justifyContent: 'center',
+  },
+  buttext: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    color: core.theme.colors.surface,
   },
 });

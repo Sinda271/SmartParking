@@ -1,8 +1,4 @@
 import React, {useState} from 'react';
-import Logo from '../components/Logo';
-import Header from '../components/Header';
-import Button from '../components/Button';
-import {emailValidator} from '../helpers/emailValidator';
 import {
   StyleSheet,
   Text,
@@ -11,17 +7,18 @@ import {
   Image,
   ScrollView,
   KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
-import {theme} from '../core/theme';
 import {getStatusBarHeight} from 'react-native-status-bar-height';
-import {List, TextInput} from 'react-native-paper';
+import {TextInput} from 'react-native-paper';
+import helpers from '../helpers';
+import core from '../core';
+import components from '../components';
 
 export default function ResetPasswordScreen({navigation}) {
   const [email, setEmail] = useState({value: '', error: ''});
 
   const sendResetPasswordEmail = () => {
-    const emailError = emailValidator(email.value);
+    const emailError = helpers.emailValidator(email.value);
     if (emailError) {
       setEmail({...email, error: emailError});
       return;
@@ -32,26 +29,19 @@ export default function ResetPasswordScreen({navigation}) {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.imageLayout} onPress={navigation.goBack}>
-        <Image
-          style={styles.image}
-          source={require('../assets/BackArrow.png')}
-        />
+        <Image style={styles.image} source={core.backarrow} />
       </TouchableOpacity>
 
-      <View style={{alignSelf: 'center', marginTop: 200}}>
-        <Logo />
+      <View style={styles.logo}>
+        <components.Logo />
       </View>
       <ScrollView>
         <KeyboardAvoidingView>
-          <View style={{alignSelf: 'center'}}>
-            <Header>Reset Password</Header>
+          <View style={styles.center}>
+            <components.Header>Reset Password</components.Header>
           </View>
           <TextInput
-            style={{
-              backgroundColor: theme.colors.surface,
-              marginRight: 60,
-              marginLeft: 60,
-            }}
+            style={styles.input}
             mode="outlined"
             label="E-mail address"
             returnKeyType="done"
@@ -64,16 +54,16 @@ export default function ResetPasswordScreen({navigation}) {
             textContentType="emailAddress"
             keyboardType="email-address"
           />
-          <Text style={{marginStart: 63}}>
+          <Text style={styles.text}>
             You will receive an email with a password{' '}
           </Text>
-          <Text style={{marginStart: 66}}>reset link.</Text>
-          <Button
+          <Text style={styles.text}>reset link.</Text>
+          <components.Button
             mode="contained"
             onPress={sendResetPasswordEmail}
-            style={{marginTop: 24, width: 200, alignSelf: 'center'}}>
+            style={styles.button}>
             Send
-          </Button>
+          </components.Button>
         </KeyboardAvoidingView>
       </ScrollView>
     </View>
@@ -84,7 +74,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     justifyContent: 'center',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
   },
   imageLayout: {
     position: 'absolute',
@@ -103,9 +93,18 @@ const styles = StyleSheet.create({
   },
   link: {
     fontWeight: 'bold',
-    color: theme.colors.primary,
+    color: core.theme.colors.primary,
   },
   scrollView: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
   },
+  logo: {alignSelf: 'center', marginTop: 200},
+  center: {alignSelf: 'center'},
+  input: {
+    backgroundColor: core.theme.colors.surface,
+    marginRight: 60,
+    marginLeft: 60,
+  },
+  button: {marginTop: 24, width: 200, alignSelf: 'center'},
+  text: {marginStart: 63},
 });

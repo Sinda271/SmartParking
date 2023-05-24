@@ -1,50 +1,33 @@
 import React from 'react';
-import Background from '../components/Background';
-import Logo from '../components/Logo';
-import Header from '../components/Header';
-import Button from '../components/Button';
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Alert,
-  Modal,
-  Pressable,
-  ScrollView,
-} from 'react-native';
-import theme from '../core/theme';
-import Paragraph from '../components/Paragraph';
-
+import {Image, StyleSheet, Text, View} from 'react-native';
+import components from '../components';
+import core from '../core';
 export default function StartScreen({navigation}) {
   return (
-    <Background>
-      <View style={{width: '100%', marginTop: 50, alignItems: 'center'}}>
-        <Logo />
-        {/*<Header>Login Mode</Header>*/}
-        <Paragraph>Welcome To PARTORRE the future of parking.</Paragraph>
-        <View style={{width: '100%', paddingTop: 60, alignItems: 'center'}}>
-          <Button
+    <components.Background>
+      <View style={styles.outerview}>
+        <components.Logo />
+        <components.Paragraph>
+          Welcome To PARTORRE the future of parking.
+        </components.Paragraph>
+        <View style={styles.innerview}>
+          <components.Button
             mode="contained"
             onPress={() => navigation.navigate('LoginScreen')}>
             Login
-          </Button>
-          <Button
+          </components.Button>
+          <components.Button
             mode="outlined"
             onPress={() => navigation.navigate('DriverSignUp')}>
             Sign Up
-          </Button>
+          </components.Button>
         </View>
       </View>
       <View>
         <Text style={styles.text}>Powered By</Text>
-        <Image
-          source={require('../assets/LogoTalan.png')}
-          style={styles.talan}
-        />
+        <Image source={core.logo} style={styles.talan} />
       </View>
-    </Background>
+    </components.Background>
   );
 }
 const styles = StyleSheet.create({
@@ -71,4 +54,6 @@ const styles = StyleSheet.create({
     height: 30,
     alignSelf: 'center',
   },
+  outerview: {width: '100%', marginTop: 50, alignItems: 'center'},
+  innerview: {width: '100%', paddingTop: 60, alignItems: 'center'},
 });

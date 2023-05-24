@@ -4,9 +4,6 @@ import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Paragraph from '../components/Paragraph';
 import BackButton from '../components/BackButton';
-import DriverSignUp from '../screens/DriverSignUp';
-import {MaterialIcons, FontAwesome} from '@expo/vector-icons';
-import {theme} from '../core/theme';
 
 export default function SignupMode({navigation}) {
   return (

@@ -10,58 +10,57 @@ import {
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MapView, {Marker} from 'react-native-maps';
-import {ChatItem} from 'react-chat-elements/native';
+import {ChatItem} from 'react-chat-elements';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {Badge} from 'react-native-elements';
+import axios from 'axios';
 import components from '../components';
 import core from '../core';
-
+import {
+  URL,
+  DriverHomeParkingInfoRoute,
+  AdminReplyNotifRoute,
+} from '../core/routes';
 const MessageIcon = <Icon name="ellipsis1" size={35} color="#3891c0" />;
 
 export default function DriverHome({navigation}) {
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
+  const [isread, setisread] = useState(0);
+  const [parkingInfo, setParkingInfo] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [adminReply, setAdminReply] = useState([]);
 
-  const [Lu, setLu] = useState(0);
-  const [parkingInfo, setParkingInfo] = useState('');
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch(
-        'http://192.168.42.157:3001/DriverHomeParkingInfo',
-      );
-      const result = await response.json();
-      //console.log(result)
-      setParkingInfo(result);
+  const getDriverHomeParkingInfo = async () => {
+    try {
+      axios({
+        method: 'get',
+        url: URL + DriverHomeParkingInfoRoute,
+      }).then(response => {
+        console.log(response);
+        setParkingInfo(response);
+      });
+    } catch (error) {
+      console.error(error);
     }
-    fetchData();
+  };
+  const getAdminReplyNotif = async () => {
+    try {
+      axios({
+        method: 'get',
+        url: URL + AdminReplyNotifRoute,
+      }).then(response => {
+        console.log(response);
+        setAdminReply(response);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    getDriverHomeParkingInfo();
+    getAdminReplyNotif();
   }, []);
-  var data = [];
-  for (let i = 0; i < parkingInfo.length; i++) {
-    data.push(Object.values(parkingInfo[i]));
-  }
-  //console.log(data)
-  const positions = {};
-  const position = {};
 
-  var lat = 0.0;
-  var long = 0.0;
-  var address = '';
-  var freeSpaces = 0;
-  for (let i = 0; i < data.length; i++) {
-    //position["latitude"] = data[i][1]
-    //position["longitude"] = data[i][2]
-    //positions["marker".concat(i.toString())] = position
-
-    lat = data[i][1];
-    long = data[i][2];
-    address = data[i][4];
-    freeSpaces = data[i][3];
-  }
-  console.log(lat);
-  console.log(long);
-  console.log(address);
-  console.log(freeSpaces);
   const state = {
     longitude: 10,
     latitude: 36,
@@ -69,67 +68,20 @@ export default function DriverHome({navigation}) {
     longitudeDelta: 9.537499,
   };
 
-  const showLongNotification = () => {};
-
-  const [alertVisible1, setAlertVisible1] = useState(false);
-
-  const handleOpen1 = () => {
-    setAlertVisible1(true);
+  const handleOpen = () => {
+    setAlertVisible(true);
   };
-  const handleClose1 = () => {
-    setAlertVisible1(false);
+  const handleClose = () => {
+    setAlertVisible(false);
   };
-
-  const [alertVisible2, setAlertVisible2] = useState(false);
-
-  const handleOpen2 = () => {
-    setAlertVisible2(true);
-  };
-  const handleClose2 = () => {
-    setAlertVisible2(false);
-  };
-
-  const [alertVisible3, setAlertVisible3] = useState(false);
-
-  const handleOpen3 = () => {
-    setAlertVisible3(true);
-  };
-  const handleClose3 = () => {
-    setAlertVisible3(false);
-  };
-
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const [adminReply, setAdminReply] = useState([]);
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch(
-        'http://192.168.42.157:3001/AdminReplyNotif',
-      );
-      const result = await response.json();
-      //console.log(result)
-      setAdminReply(result);
-    }
-    fetchData();
-  }, []);
-
-  var subject = '';
-  var reply = '';
-  var isread = 0;
-  for (let i = 0; i < adminReply.length; i++) {
-    subject = adminReply[i]['SubjectRev'];
-    reply = adminReply[i]['ReplyRev'];
-    isread = adminReply[i]['Lu'];
-  }
-  console.log(subject, reply, isread);
 
   return (
     <View style={styles.container}>
-      <Text style={{color: 'transparent'}}>
-        {long} {lat}
+      <Text style={styles.outertext}>
+        {parkingInfo.long} {parkingInfo.lat}
       </Text>
       <MapView
-        style={{flex: 1}}
+        style={styles.mapview}
         initialRegion={{
           latitudeDelta: state.latitudeDelta,
           longitudeDelta: state.longitudeDelta,
@@ -137,70 +89,44 @@ export default function DriverHome({navigation}) {
           longitude: state.longitude,
         }}>
         <Marker
-          coordinate={{longitude: lat, latitude: long}}
-          image={require('../assets/marker.png')}
-          style={{width: 10, height: 10}}
+          coordinate={{longitude: parkingInfo.lat, latitude: parkingInfo.long}}
+          image={core.marker}
+          style={styles.marker}
           onPress={() => {
-            handleOpen1();
+            handleOpen();
           }}
         />
-        {/*<Marker coordinate={ {longitude: markers.marker2.longitude, latitude: markers.marker2.latitude}} image={require('../assets/marker.png')} style={{ width: 10, height: 10}} onPress={() => {handleOpen2()}}/>
-      <Marker coordinate={ {longitude: markers.marker3.longitude, latitude: markers.marker3.latitude}} image={require('../assets/marker.png')} style={{ width: 10, height: 10}} onPress={() => {handleOpen3()}}/>*/}
       </MapView>
 
-      <View
-        style={{
-          backgroundColor: theme.colors.surface,
-          borderBottomStartRadius: 20,
-          borderBottomEndRadius: 20,
-          height: 80,
-          width: 410,
-          flexDirection: 'row',
-          position: 'absolute',
-        }}>
-        <TouchableOpacity
-          style={{alignItems: 'flex-start', marginTop: 35, marginStart: 30}}
-          onPress={navigation.openDrawer}>
-          <FontAwesome name="bars" size={24} color={theme.colors.primary} />
+      <View style={styles.innerview}>
+        <TouchableOpacity style={styles.menu} onPress={navigation.openDrawer}>
+          <FontAwesome
+            name="bars"
+            size={24}
+            color={core.theme.colors.primary}
+          />
         </TouchableOpacity>
-        <Text
-          style={{
-            fontSize: 15,
-            marginStart: 133,
-            marginTop: 15,
-            alignSelf: 'center',
-            fontWeight: 'bold',
-            color: theme.colors.primary,
-          }}>
-          Home
-        </Text>
+        <Text style={styles.bartext}>Home</Text>
 
-        <Image
-          style={styles.image}
-          source={require('../assets/LogoNoText.png')}
-        />
+        <Image style={styles.image} source={core.logonotext} />
       </View>
 
-      <MarkerPopUp
-        address={address}
-        freeSpaces={freeSpaces}
-        visible={alertVisible1}
+      <components.MarkerPopUp
+        address={parkingInfo.address}
+        freeSpaces={parkingInfo.freeSpaces}
+        visible={alertVisible}
         close={() => {
-          handleClose1();
+          handleClose();
         }}
         navigation={() => {
           navigation.navigate('DriverReservationM1', {
             itemId: 2,
-            latitude: lat,
-            longitude: long,
+            latitude: parkingInfo.lat,
+            longitude: parkingInfo.long,
           });
-          handleClose1();
+          handleClose();
         }}
       />
-      {/*<MarkerPopUp address="Tunis" freeSpaces={5} visible={ alertVisible2} close={() => {handleClose2()}} navigation={()=>{navigation.navigate('DriverReservationM2')
-                                                                                                                            handleClose2()}}/>
-      <MarkerPopUp address="Djerba, Midoune" freeSpaces={8} visible={ alertVisible3} close={() => {handleClose3()}} navigation={()=>{navigation.navigate('DriverReservationM3')
-    handleClose3()}}/>*/}
       <Modal
         animationType="fade"
         transparent={true}
@@ -208,36 +134,24 @@ export default function DriverHome({navigation}) {
         onRequestClose={() => {
           setModalVisible(!modalVisible);
         }}>
-        <View
-          style={[
-            styles.centeredView,
-            {width: '92.5%'},
-            {height: '70%'},
-            {alignSelf: 'center'},
-          ]}>
-          <View
-            style={[
-              styles.modalView,
-              {width: '92.5%'},
-              {height: '50%'},
-              {alignSelf: 'center'},
-            ]}>
+        <View style={[styles.centeredView, styles.view2]}>
+          <View style={[styles.modalView, styles.view2]}>
             <View style={styles.Tabcontainer}>
               <ChatItem
-                avatar={require('../assets/LogoNoText.png')}
+                avatar={core.logonotext}
                 alt={'Reactjs'}
-                subtitle={subject}
-                title={new Date().toString().substr(0, 15)}
+                subtitle={adminReply.subject}
+                title={new Date().toString().substring(0, 15)}
                 date={null}
                 unread={0}
               />
-              <Text style={{marginStart: 80, marginTop: 10}}>{reply}</Text>
+              <Text style={styles.margin}>{adminReply.reply}</Text>
             </View>
 
             <Pressable
               style={[styles.button, styles.buttonClose]}
               onPress={() => {
-                setLu(1);
+                setisread(1);
                 setModalVisible(!modalVisible);
               }}>
               <Text style={styles.textStyle}>Hide</Text>
@@ -246,39 +160,18 @@ export default function DriverHome({navigation}) {
         </View>
       </Modal>
       <TouchableOpacity
-        style={{
-          borderRadius: 70,
-          width: 70,
-          height: 70,
-          marginTop: 740,
-          backgroundColor: theme.colors.surface,
-
-          marginStart: 310,
-          alignItems: 'center',
-          justifyContent: 'center',
-          shadowColor: '#a9a9a9a',
-          shadowOpacity: 0.8,
-          elevation: 6,
-          shadowRadius: 80,
-          shadowOffset: {width: 1, height: 80},
-          position: 'absolute',
-        }}
+        style={styles.touchable}
         onPress={() => setModalVisible(true)}>
-        {Lu === 0 ? (
+        {isread === 0 ? (
           <Badge
             value={'+' + isread}
             status="error"
-            containerStyle={{position: 'absolute', top: -4, right: -4}}
+            containerStyle={styles.badge}
           />
         ) : (
-          <Badge
-            badgeStyle={{backgroundColor: 'transparent'}}
-            containerStyle={{position: 'absolute', top: -4, right: -4}}
-          />
+          <Badge badgeStyle={styles.badgebg} containerStyle={styles.badge} />
         )}
-
         {MessageIcon}
-        {/*<Feather name="bell" size={24} color={theme.colors.primary} />*/}
       </TouchableOpacity>
     </View>
   );
@@ -286,7 +179,7 @@ export default function DriverHome({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
   },
   image: {
     width: 30,
@@ -296,7 +189,7 @@ const styles = StyleSheet.create({
   },
   panel: {
     padding: 20,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
     paddingTop: 0,
     height: 300,
   },
@@ -306,12 +199,12 @@ const styles = StyleSheet.create({
   panelTitle: {
     fontSize: 27,
     height: 35,
-    color: theme.colors.primary,
+    color: core.theme.colors.primary,
   },
   panelButton: {
     padding: 13,
     borderRadius: 10,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
     alignItems: 'center',
     marginVertical: 7,
   },
@@ -358,11 +251,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   buttonOpen: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
     width: '100%',
   },
   buttonClose: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
   },
   textStyle: {
     color: 'white',
@@ -376,4 +269,45 @@ const styles = StyleSheet.create({
     paddingEnd: 40,
     backgroundColor: '#fff',
   },
+  outertext: {color: 'transparent'},
+  mapview: {flex: 1},
+  marker: {width: 10, height: 10},
+  innerview: {
+    backgroundColor: core.theme.colors.surface,
+    borderBottomStartRadius: 20,
+    borderBottomEndRadius: 20,
+    height: 80,
+    width: 410,
+    flexDirection: 'row',
+    position: 'absolute',
+  },
+  menu: {alignItems: 'flex-start', marginTop: 35, marginStart: 30},
+  bartext: {
+    fontSize: 15,
+    marginStart: 133,
+    marginTop: 15,
+    alignSelf: 'center',
+    fontWeight: 'bold',
+    color: core.theme.colors.primary,
+  },
+  view2: {width: '92.5%', height: '70%', alignSelf: 'center'},
+  margin: {marginStart: 80, marginTop: 10},
+  touchable: {
+    borderRadius: 70,
+    width: 70,
+    height: 70,
+    marginTop: 740,
+    backgroundColor: core.theme.colors.surface,
+    marginStart: 310,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#a9a9a9a',
+    shadowOpacity: 0.8,
+    elevation: 6,
+    shadowRadius: 80,
+    shadowOffset: {width: 1, height: 80},
+    position: 'absolute',
+  },
+  badge: {position: 'absolute', top: -4, right: -4},
+  badgebg: {backgroundColor: 'transparent'},
 });

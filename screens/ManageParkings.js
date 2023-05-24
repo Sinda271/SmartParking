@@ -1,4 +1,3 @@
-import {Table, Row, Rows} from 'react-native-table-component';
 import React, {useEffect, useState} from 'react';
 import {
   Image,
@@ -10,25 +9,28 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  SafeAreaView,
   Dimensions,
 } from 'react-native';
-import {MaterialCommunityIcons} from '@expo/vector-icons';
-import Icon2 from 'react-native-vector-icons/Ionicons';
-import Icon1 from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Table, Row, Rows} from 'react-native-table-component';
+import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Searchbar} from 'react-native-paper';
-import {theme} from '../core/theme';
-
+import axios from 'axios';
+import core from '../core';
+import {URL, AdminParkingsTableRoute, ParkingDeleteRoute} from '../core/routes';
 export default function ManageParkings({navigation}) {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [parkingTable, setParkingTable] = useState([]);
+  const [search, setSearch] = useState('');
   const editIcon = (
-    <Icon1
+    <MaterialCommunityIcons
       name="playlist-plus"
       size={28}
       color="#3891c0"
       onPress={() => navigation.navigate('AddParking')}
     />
   );
-  const BackIcon = <Icon2 name="chevron-back" size={40} color="#3891c0" />;
+  const BackIcon = <Icon name="chevron-back" size={40} color="#3891c0" />;
   const removeIcon = (
     <MaterialCommunityIcons
       name="playlist-remove"
@@ -37,50 +39,33 @@ export default function ManageParkings({navigation}) {
       onPress={() => setModalVisible(true)}
     />
   );
-  const RemoveParking = (
-    <Icon1 name="playlist-remove" size={40} color="#3891c0" />
-  );
-  const [modalVisible1, setModalVisible] = useState(false);
-  const [parkingTable, setParkingTable] = useState([]);
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch(
-        'http://192.168.42.157:3001/AdminParkingsTable',
-      );
-      const result = await response.json();
-      //console.log(result)
-      setParkingTable(result);
+
+  const getAdminParkingsTable = async () => {
+    try {
+      axios({
+        method: 'get',
+        url: URL + AdminParkingsTableRoute,
+      }).then(response => {
+        console.log(response);
+        setParkingTable(response);
+      });
+    } catch (error) {
+      console.error(error);
     }
-    fetchData();
+  };
+  useEffect(() => {
+    getAdminParkingsTable();
   }, []);
 
-  var parkingtab = [];
-  for (let i = 0; i < parkingTable.length; i++) {
-    parkingtab.push(Object.values(parkingTable[i]));
-  }
-
-  //console.log(parkingtab)
-
-  var data = [];
-  for (let i = 0; i < parkingtab.length; i++) {
-    data.push([
-      parkingtab[i][0],
-      parkingtab[i][1].concat(' ').concat(parkingtab[i][2]),
-      parkingtab[i][3].toString().concat('/6'),
-    ]);
-  }
-
-  console.log(data);
   const state = {
     tableHead: ['Address', 'Agent', 'Status'],
 
-    tableData: data,
+    tableData: parkingTable,
   };
 
-  const [search, setSearch] = useState('');
   const searchFilter = text => {
     if (text) {
-      const newdata = data.filter(item => item[0].toString() === text);
+      const newdata = parkingTable.filter(item => item[0].toString() === text);
       setSearch(newdata);
     }
   };
@@ -90,16 +75,23 @@ export default function ManageParkings({navigation}) {
     addr = search[i][0];
   }
   const onParkingRemove = async () => {
-    fetch('http://192.168.42.157:3001/ParkingDelete', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        addr: addr,
-      }),
-    });
+    try {
+      axios({
+        method: 'post',
+        url: URL + ParkingDeleteRoute,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          addr: addr,
+        },
+      }).then(response => {
+        console.log(response);
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -108,7 +100,7 @@ export default function ManageParkings({navigation}) {
         <Table
           borderStyle={{
             borderWidth: 2,
-            borderColor: theme.colors.primary,
+            borderColor: core.theme.colors.primary,
           }}>
           <Row
             data={state.tableHead}
@@ -121,10 +113,10 @@ export default function ManageParkings({navigation}) {
         <Modal
           animationType="slide"
           transparent={true}
-          visible={modalVisible1}
+          visible={modalVisible}
           onRequestClose={() => {
             Alert.alert('Modal has been closed.');
-            setModalVisible(!modalVisible1);
+            setModalVisible(!modalVisible);
           }}>
           <View
             style={[
@@ -163,7 +155,7 @@ export default function ManageParkings({navigation}) {
               </Pressable>
               <Pressable
                 style={[styles.button, styles.buttonClose]}
-                onPress={() => setModalVisible(!modalVisible1)}>
+                onPress={() => setModalVisible(!modalVisible)}>
                 <Text style={styles.textStyle}>Hide</Text>
               </Pressable>
             </View>
@@ -179,7 +171,7 @@ export default function ManageParkings({navigation}) {
             style={{
               paddingTop: 30,
 
-              color: theme.colors.primary,
+              color: core.theme.colors.primary,
               marginBottom: 30,
               marginLeft: 30,
             }}>
@@ -189,7 +181,7 @@ export default function ManageParkings({navigation}) {
             style={{
               paddingTop: 30,
 
-              color: theme.colors.primary,
+              color: core.theme.colors.primary,
               marginBottom: 30,
               marginLeft: 30,
             }}>
@@ -199,7 +191,7 @@ export default function ManageParkings({navigation}) {
       </ScrollView>
       <View
         style={{
-          backgroundColor: theme.colors.surface,
+          backgroundColor: core.theme.colors.surface,
           borderBottomStartRadius: 20,
           borderBottomEndRadius: 20,
           height: 80,
@@ -224,7 +216,7 @@ export default function ManageParkings({navigation}) {
             marginTop: 15,
             alignSelf: 'center',
             fontWeight: 'bold',
-            color: theme.colors.primary,
+            color: core.theme.colors.primary,
           }}>
           Parking Management
         </Text>
@@ -239,7 +231,7 @@ export default function ManageParkings({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
   },
   image: {
     width: 30,
@@ -274,11 +266,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   buttonOpen: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
     width: '100%',
   },
   buttonClose: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
   },
   textStyle: {
     color: 'white',
@@ -297,7 +289,7 @@ const styles = StyleSheet.create({
   },
   Tabhead: {
     height: 40,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
     marginTop: 120,
   },
   TabHeadertext: {
@@ -308,7 +300,7 @@ const styles = StyleSheet.create({
   },
   Tabtext: {
     margin: 6,
-    color: theme.colors.primary,
+    color: core.theme.colors.primary,
     textAlign: 'center',
     fontWeight: 'bold',
   },

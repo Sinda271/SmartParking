@@ -1,10 +1,8 @@
-import React, {Component, useState} from 'react';
-
+import React, {Component} from 'react';
 import LottieView from 'lottie-react-native';
-
-import {View, Text, Animated, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import {theme} from '../core/theme';
+import core from '../core';
 
 export default class Fidelity extends Component {
   constructor(props) {
@@ -12,11 +10,7 @@ export default class Fidelity extends Component {
   }
 
   componentDidMount() {
-    this.textRef.fadeIn(9000); /*.then(()=>{
-            setInterval(() => {
-                this.textRef.pulse(2000)  
-            }, 2000)
-        })*/
+    this.textRef.fadeIn(9000);
   }
   render() {
     const {navigate} = this.props.navigation;
@@ -25,42 +19,23 @@ export default class Fidelity extends Component {
         <View style={styles.header}></View>
 
         <Animatable.View style={styles.footer} animation="fadeInUp">
-          <Animatable.View
-            style={{
-              flex: 1,
-              backgroundColor: '#ffffff',
-              flexDirection: 'column',
-              borderTopStartRadius: 20,
-              borderTopEndRadius: 20,
-            }}
-            animation="fadeInUp">
+          <Animatable.View style={styles.innerview} animation="fadeInUp">
             <View>
               <LottieView
-                source={require('../assets/pandoraBox.json')}
+                source={core.gift}
                 autoPlay
                 loop={false}
                 speed={1.5}
                 paddingVertical={200}
               />
             </View>
-            <View
-              style={{
-                flex: 3,
-                alignItems: 'center',
-                flexDirection: 'column',
-              }}>
+            <View style={styles.view1}>
               <Text style={styles.text_footer}>Congratulations !</Text>
             </View>
           </Animatable.View>
         </Animatable.View>
         <View style={styles.footer1}>
-          <View
-            style={{
-              flex: 3,
-              alignItems: 'center',
-              flexDirection: 'column',
-              marginTop: 50,
-            }}>
+          <View style={styles.view2}>
             <Animatable.Text
               style={styles.text_footer0}
               animation="jello"
@@ -82,13 +57,7 @@ export default class Fidelity extends Component {
               Loyalty Points
             </Animatable.Text>
             <Animatable.Text
-              style={{
-                fontWeight: 'bold',
-                fontSize: 20,
-                color: '#FECA13',
-                alignSelf: 'center',
-                marginTop: 20,
-              }}
+              style={styles.text}
               delay={3000}
               ref={el => (this.textRef = el)}
               onPress={() => {
@@ -106,7 +75,7 @@ export default class Fidelity extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
   },
 
   header: {
@@ -159,5 +128,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
+  },
+  innerview: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    flexDirection: 'column',
+    borderTopStartRadius: 20,
+    borderTopEndRadius: 20,
+  },
+  view1: {
+    flex: 3,
+    alignItems: 'center',
+    flexDirection: 'column',
+  },
+  view2: {
+    flex: 3,
+    alignItems: 'center',
+    flexDirection: 'column',
+    marginTop: 50,
+  },
+  text: {
+    fontWeight: 'bold',
+    fontSize: 20,
+    color: '#FECA13',
+    alignSelf: 'center',
+    marginTop: 20,
   },
 });

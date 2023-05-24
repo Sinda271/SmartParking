@@ -1,9 +1,6 @@
 import React from 'react';
-import {State} from 'react-native-gesture-handler';
-import Background from '../components/Background';
-import Logo from '../components/Logo';
 import {Image, StyleSheet, View, Text} from 'react-native';
-import {theme} from '../core/theme';
+import core from '../core';
 
 export default function SplashScreen({navigation}) {
   setTimeout(() => {
@@ -12,14 +9,11 @@ export default function SplashScreen({navigation}) {
   return (
     <View style={styles.container} behavior="padding">
       <View>
-        <Image source={require('../assets/Logo.png')} style={styles.image} />
+        <Image source={core.logo} style={styles.image} />
       </View>
       <View>
         <Text style={styles.text}>Powered By</Text>
-        <Image
-          source={require('../assets/LogoTalan.png')}
-          style={styles.talan}
-        />
+        <Image source={core.logonotext} style={styles.talan} />
       </View>
     </View>
   );
@@ -36,7 +30,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     justifyContent: 'center',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
   },
   text: {
     fontWeight: 'bold',

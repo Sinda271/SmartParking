@@ -1,6 +1,4 @@
-import {Table, Row, Rows} from 'react-native-table-component';
 import React, {useState, useEffect} from 'react';
-import {KeyboardAvoidingView} from 'react-native';
 import {
   Image,
   StyleSheet,
@@ -13,61 +11,51 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import {Searchbar} from 'react-native-paper';
+import {Table, Row, Rows} from 'react-native-table-component';
+import {List, Searchbar} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Icon2 from 'react-native-vector-icons/Ionicons';
-import {theme} from '../core/theme';
-import {Title, Caption, List, IconButton} from 'react-native-paper';
+import axios from 'axios';
+import core from '../core';
+import {
+  URL,
+  AdminAgentsTableRoute,
+  AdminDeleteAgentRoute,
+} from '../core/routes';
 
 export default function ManageAgents({navigation}) {
-  //Icons
   const adduser = <Icon name="adduser" size={28} color="#3891c0" />;
   const BackIcon = <Icon2 name="chevron-back" size={40} color="#3891c0" />;
   const Removeuser = <Icon name="deleteuser" size={28} color="#3891c0" />;
-  //State of pop-up
-  const [modalVisible1, setModalVisible1] = useState(false);
-  //State of search bar
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const onChangeSearch = query => setSearchQuery(query);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [agentTable, setAgentTable] = useState([]);
+  const [search, setSearch] = useState([]);
 
-  //Table of Agents
-  const [agentTable, setAgentTable] = useState('');
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch(
-        'http://192.168.42.157:3001/AdminAgentsTable',
-      );
-      const result = await response.json();
-      //console.log(result)
-      setAgentTable(result);
+  const getAdminAgentsTable = async () => {
+    try {
+      axios({
+        method: 'get',
+        url: URL + AdminAgentsTableRoute,
+      }).then(response => {
+        console.log(response);
+        setAgentTable(response);
+      });
+    } catch (error) {
+      console.error(error);
     }
-    fetchData();
+  };
+  useEffect(() => {
+    getAdminAgentsTable();
   }, []);
 
-  var agenttab = [];
-  for (let i = 0; i < agentTable.length; i++) {
-    agenttab.push(Object.values(agentTable[i]));
-  }
-  //console.log(agenttab)
-  var data = [];
-  for (let i = 0; i < agenttab.length; i++) {
-    data.push([
-      agenttab[i][0],
-      agenttab[i][1].concat(' ').concat(agenttab[i][2]),
-      agenttab[i][3],
-      agenttab[i][4].substr(0, 10),
-    ]);
-  }
-  //console.log(data)
   const state = {
     tableHead: ['CIN', 'Agent Name', 'Parking', 'Recruitment Date'],
-    tableData: data,
+    tableData: agentTable,
   };
 
-  const [search, setSearch] = useState('');
   const searchFilter = text => {
     if (text) {
-      const newdata = data.filter(item => item[0].toString() === text);
+      const newdata = agentTable.filter(item => item[0].toString() === text);
       setSearch(newdata);
     }
   };
@@ -84,16 +72,23 @@ export default function ManageAgents({navigation}) {
   }
 
   const onAgentRemove = async () => {
-    fetch('http://192.168.42.157:3001/AdminDeleteAgent', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        cin: CINA,
-      }),
-    });
+    try {
+      axios({
+        method: 'post',
+        url: URL + AdminDeleteAgentRoute,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          cin: CINA,
+        },
+      }).then(response => {
+        console.log(response);
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -102,7 +97,7 @@ export default function ManageAgents({navigation}) {
         <Table
           borderStyle={{
             borderWidth: 2,
-            borderColor: theme.colors.primary,
+            borderColor: core.theme.colors.primary,
           }}>
           <Row
             data={state.tableHead}
@@ -122,10 +117,10 @@ export default function ManageAgents({navigation}) {
             <Modal
               animationType="slide"
               transparent={true}
-              visible={modalVisible1}
+              visible={modalVisible}
               onRequestClose={() => {
                 Alert.alert('Modal has been closed.');
-                setModalVisible(!modalVisible1);
+                setModalVisible(!modalVisible);
               }}>
               <View
                 style={[
@@ -153,10 +148,7 @@ export default function ManageAgents({navigation}) {
                     <Searchbar
                       placeholder="CIN"
                       onChangeText={text => searchFilter(text)}
-                      /*value={searchQuery}*/
                       onIconPress={() => navigation.navigate('AdminDashboard')}
-                      /* select Name, Phone_Number, parking from Agent
-                          where (CIN=value)*/
                     />
                   </View>
                   <View style={{marginBottom: 60}}>
@@ -167,7 +159,7 @@ export default function ManageAgents({navigation}) {
                         <List.Icon
                           {...props}
                           icon="account"
-                          color={theme.colors.primary}
+                          color={core.theme.colors.primary}
                           style={styles.link}
                         />
                       )}>
@@ -223,10 +215,7 @@ export default function ManageAgents({navigation}) {
                   </Pressable>
                   <Pressable
                     style={[styles.button, styles.buttonClose]}
-                    onPress={() => setModalVisible1(!modalVisible1)}
-                    /* DELETE FROM Agent
-                        WHERE (CIN=value) */
-                  >
+                    onPress={() => setModalVisible(!modalVisible)}>
                     <Text style={styles.textStyle}>Hide</Text>
                   </Pressable>
                 </View>
@@ -237,20 +226,20 @@ export default function ManageAgents({navigation}) {
                 style={{
                   paddingTop: 30,
                   fontWeight: 'bold',
-                  color: theme.colors.primary,
+                  color: core.theme.colors.primary,
                   fontSize: 20,
                   marginLeft: 10,
                   marginRight: 100,
                   paddingBottom: 30,
                 }}
-                onPress={() => setModalVisible1(true)}>
+                onPress={() => setModalVisible(true)}>
                 {Removeuser}
               </TouchableOpacity>
               <TouchableOpacity
                 style={{
                   paddingTop: 30,
                   fontWeight: 'bold',
-                  color: theme.colors.primary,
+                  color: core.theme.colors.primary,
                   fontSize: 20,
                   paddingBottom: 30,
                 }}
@@ -263,7 +252,7 @@ export default function ManageAgents({navigation}) {
       </ScrollView>
       <View
         style={{
-          backgroundColor: theme.colors.surface,
+          backgroundColor: core.theme.colors.surface,
           borderBottomStartRadius: 20,
           borderBottomEndRadius: 20,
           height: 80,
@@ -293,7 +282,7 @@ export default function ManageAgents({navigation}) {
             marginTop: 15,
             alignSelf: 'center',
             fontWeight: 'bold',
-            color: theme.colors.primary,
+            color: core.theme.colors.primary,
           }}>
           Agent Management
         </Text>
@@ -308,7 +297,7 @@ export default function ManageAgents({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
   },
   image: {
     width: 30,
@@ -345,11 +334,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   buttonOpen: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
     width: '100%',
   },
   buttonClose: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
   },
   textStyle: {
     color: 'white',
@@ -368,7 +357,7 @@ const styles = StyleSheet.create({
   },
   Tabhead: {
     height: 40,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: core.theme.colors.primary,
     marginTop: 120,
   },
   TabHeadertext: {
@@ -379,7 +368,7 @@ const styles = StyleSheet.create({
   },
   Tabtext: {
     margin: 6,
-    color: theme.colors.primary,
+    color: core.theme.colors.primary,
     textAlign: 'center',
     fontWeight: 'bold',
   },

@@ -8,145 +8,88 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import {Text} from 'react-native-paper';
-import Logo from '../components/Logo';
-import Header from '../components/Header';
-import Button from '../components/Button';
-import TextInput from '../components/TextInput';
-import {theme} from '../core/theme';
-import {emailValidator} from '../helpers/emailValidator';
-import {passwordValidator} from '../helpers/passwordValidator';
+import {Text, TextInput} from 'react-native-paper';
 import {getStatusBarHeight} from 'react-native-status-bar-height';
+import axios from 'axios';
+import core from '../core';
+import helpers from '../helpers';
+import components from '../components';
+import {URL, LoginRoute} from '../core/routes';
 
 export default function LoginScreenNoGoBack({navigation}) {
   const [email, setEmail] = useState({value: '', error: ''});
   const [password, setPassword] = useState({value: '', error: ''});
 
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
   const onLoginPressed = async () => {
-    const emailError = emailValidator(email.value);
-    const passwordError = passwordValidator(password.value);
+    const emailError = helpers.emailValidator(email.value);
+    const passwordError = helpers.passwordValidator(password.value);
     if (emailError || passwordError) {
       setEmail({...email, error: emailError});
       setPassword({...password, error: passwordError});
       return;
     }
-    // driver login
-    const response = await fetch('http://192.168.42.157:3001/LoginClient', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        login: email.value,
-        password: password.value,
-      }),
-    });
 
-    const result = JSON.stringify(response);
-
-    //var data = result.search(/"content-length":"?"/)
-    //console.log(data)
-
-    // Agent login
-    const response1 = await fetch('http://192.168.42.157:3001/LoginAgent', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        login: email.value,
-        password: password.value,
-      }),
-    });
-
-    const result1 = JSON.stringify(response1);
-
-    //Admin login
-    const response2 = await fetch('http://192.168.42.157:3001/LoginAdmin', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        login: email.value,
-        password: password.value,
-      }),
-    });
-
-    const result2 = JSON.stringify(response2);
-
-    console.log(result.substr(75, 20)[19]);
-    console.log(result1.substr(75, 20)[19]);
-    console.log(result2.substr(75, 20)[19]);
-
-    if (result.substr(75, 20)[19] === '"') {
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'DriverDashboard'}],
+    try {
+      axios({
+        method: 'post',
+        url: URL + LoginRoute,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          login: email.value,
+          password: password.value,
+        },
+      }).then(response => {
+        console.log(response);
+        if (
+          response === 'Email Not Found!!' ||
+          response === 'Invalid Password!!'
+        )
+          Alert.alert(response);
+        else {
+          if (response.role === 'driver') {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'DriverDashboard'}],
+            });
+          }
+          if (response.role === 'agent') {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'AgentDashboard'}],
+            });
+          }
+          if (response.role === 'admin') {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'AdminDashboard'}],
+            });
+          }
+        }
       });
-    }
-    if (result1.substr(75, 20)[19] === '"') {
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'AgentDashboard'}],
-      });
-    }
-    if (result2.substr(75, 20)[19] === '"') {
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'AdminDashboard'}],
-      });
-    }
-
-    if (
-      result.substr(75, 20)[19] === '5' &&
-      result1.substr(75, 20)[19] === '5' &&
-      result2.substr(75, 20)[19] === '5'
-    ) {
-      Alert.alert('Email Not Found!!');
-    }
-
-    if (
-      result.substr(75, 20)[19] === '6' ||
-      result1.substr(75, 20)[19] === '6' ||
-      result2.substr(75, 20)[19] === '6'
-    ) {
-      Alert.alert('Invalid Password!!');
+    } catch (error) {
+      console.error(error);
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* <TouchableOpacity  style={styles.imageLayout} onPress={navigation.goBack}>
-                <Image
-                style={styles.image}
-                source={require('../assets/BackArrow.png')}
-                />
-  </TouchableOpacity>*/}
-
-      <View style={{alignSelf: 'center', marginTop: 150}}>
-        <Logo />
+      <View style={styles.logo}>
+        <components.Logo />
       </View>
 
       <ScrollView>
         <KeyboardAvoidingView>
-          <View style={{alignSelf: 'center'}}>
-            <Header>Welcome Back</Header>
+          <View style={styles.center}>
+            <components.Header>Welcome Back</components.Header>
           </View>
           <TextInput
-            style={{
-              backgroundColor: theme.colors.surface,
-              marginRight: 60,
-              marginLeft: 60,
-            }}
+            style={styles.inputtext}
             label="Email"
             returnKeyType="next"
+            mode="outlined"
             value={email.value}
             onChangeText={text => setEmail({value: text, error: ''})}
             error={!!email.error}
@@ -157,12 +100,9 @@ export default function LoginScreenNoGoBack({navigation}) {
             keyboardType="email-address"
           />
           <TextInput
-            style={{
-              backgroundColor: theme.colors.surface,
-              marginRight: 60,
-              marginLeft: 60,
-            }}
+            style={styles.inputtext}
             label="Password"
+            mode="outlined"
             returnKeyType="done"
             value={password.value}
             onChangeText={text => setPassword({value: text, error: ''})}
@@ -176,12 +116,12 @@ export default function LoginScreenNoGoBack({navigation}) {
               <Text style={styles.forgot}>Forgot your password?</Text>
             </TouchableOpacity>
           </View>
-          <Button
+          <components.Button
             mode="contained"
             onPress={onLoginPressed}
-            style={{marginTop: 24, width: 200, marginStart: 100}}>
+            style={styles.button}>
             Login
-          </Button>
+          </components.Button>
           <View style={styles.row}>
             <Text>Don’t have an account? </Text>
             <TouchableOpacity
@@ -200,7 +140,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     justifyContent: 'center',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
   },
   forgotPassword: {
     width: '100%',
@@ -214,12 +154,12 @@ const styles = StyleSheet.create({
   },
   forgot: {
     fontSize: 13,
-    color: theme.colors.secondary,
+    color: core.theme.colors.secondary,
     marginRight: 60,
   },
   link: {
     fontWeight: 'bold',
-    color: theme.colors.primary,
+    color: core.theme.colors.primary,
   },
   imageLayout: {
     position: 'absolute',
@@ -231,4 +171,12 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
+  inputtext: {
+    backgroundColor: core.theme.colors.surface,
+    marginRight: 60,
+    marginLeft: 60,
+  },
+  logo: {alignSelf: 'center', marginTop: 150},
+  center: {alignSelf: 'center'},
+  button: {marginTop: 24, width: 200, marginStart: 100},
 });

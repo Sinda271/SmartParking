@@ -1,26 +1,16 @@
-import React, {useState} from 'react';
-import Logo from '../components/Logo';
-import {theme} from '../core/theme';
+import React from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  Image,
   Linking,
   Alert,
 } from 'react-native';
-import {getStatusBarHeight} from 'react-native-status-bar-height';
-import Button from '../components/Button';
-import {emailValidator} from '../helpers/emailValidator';
-import {passwordValidator} from '../helpers/passwordValidator';
-import {nameValidator} from '../helpers/nameValidator';
-import {Ionicons} from '@expo/vector-icons';
-import {List, TextInput} from 'react-native-paper';
-import {createDrawerNavigator} from 'react-navigation-drawer';
-import {SideBar} from '../components/SideBar';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
-import {InAppBrowser} from 'react-native-inappbrowser-reborn';
+import core from '../core';
+import {URL, MakePaymentRoute} from '../core/routes';
 
 export default function DriverPayment({...props}) {
   const paymentInfo = props.route.params.pay;
@@ -49,19 +39,26 @@ export default function DriverPayment({...props}) {
   }
 
   const onPaySuccess = async () => {
-    await fetch('http://192.168.42.157:3001/MakePayment', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        cinPay: paymentInfo.id,
-        datePay: thisDay,
-        AmountPay: cartInfo.amount,
-        resId: paymentInfo.reserId,
-      }),
-    });
+    try {
+      axios({
+        method: 'post',
+        url: URL + MakePaymentRoute,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          cinPay: paymentInfo.id,
+          datePay: thisDay,
+          AmountPay: cartInfo.amount,
+          resId: paymentInfo.reserId,
+        },
+      }).then(response => {
+        console.log(response);
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const onPayment = async () => {
@@ -134,89 +131,44 @@ export default function DriverPayment({...props}) {
 
   return (
     <View style={styles.container}>
-      {/*<View style={{ backgroundColor: theme.colors.primary, borderBottomStartRadius: 20, borderBottomEndRadius: 20, height: 80, width: 415, flexDirection: 'row'}}>
-      <TouchableOpacity style={{alignItems: 'flex-start', marginTop: 35, marginStart: 30}} onPress={navigation.openDrawer} >
-        <FontAwesome name="bars" size={24} color={theme.colors.surface}/>
-        
-      </TouchableOpacity>
-      <Text style={{ fontSize: 15, marginStart: 125,marginTop: 15, alignSelf: 'center', fontWeight:'bold', color :theme.colors.surface }}>Payment</Text>
-
-      <Image
-                style={styles.image}
-                source={require('../assets/LogoNoText.png')}
-                />
-    </View>*/}
-
       <TouchableOpacity
-        style={{
-          borderRadius: 50,
-          width: 50,
-          height: 50,
-          marginTop: 50,
-          backgroundColor: theme.colors.primary,
-          alignSelf: 'flex-start',
-          marginStart: 35,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        style={styles.touchable}
         onPress={props.navigation.goBack}>
-        <Ionicons name="chevron-back" size={24} color={theme.colors.surface} />
+        <Ionicons
+          name="chevron-back"
+          size={24}
+          color={core.theme.colors.surface}
+        />
       </TouchableOpacity>
 
-      <Text
-        style={{
-          fontSize: 25,
-          marginTop: 200,
-          color: theme.colors.secondary,
-          fontWeight: 'bold',
-        }}>
-        {' '}
-        Make Payment{' '}
-      </Text>
+      <Text style={styles.paytext}> Make Payment </Text>
 
-      <View style={{alignSelf: 'center', flexDirection: 'row', marginTop: 20}}>
-        <Text style={{fontSize: 16, fontWeight: 'bold'}}>Client: </Text>
-        <Text style={{fontSize: 16}}>{cartInfo.clientId} </Text>
+      <View style={styles.view}>
+        <Text style={styles.text1}>Client: </Text>
+        <Text style={styles.text2}>{cartInfo.clientId} </Text>
       </View>
 
-      <View style={{alignSelf: 'center', flexDirection: 'row', marginTop: 20}}>
-        <Text style={{fontSize: 16, fontWeight: 'bold'}}>Licence Plate: </Text>
-        <Text style={{fontSize: 16}}>{cartInfo.lp} </Text>
+      <View style={styles.view}>
+        <Text style={styles.text1}>Licence Plate: </Text>
+        <Text style={styles.text2}>{cartInfo.lp} </Text>
       </View>
 
-      <View style={{alignSelf: 'center', flexDirection: 'row', marginTop: 20}}>
-        <Text style={{fontSize: 16, fontWeight: 'bold'}}>
-          Parking Duration:{' '}
-        </Text>
-        <Text style={{fontSize: 16}}>{cartInfo.duration} </Text>
+      <View style={styles.view}>
+        <Text style={styles.text1}>Parking Duration: </Text>
+        <Text style={styles.text2}>{cartInfo.duration} </Text>
       </View>
 
-      <View style={{alignSelf: 'center', flexDirection: 'row', marginTop: 20}}>
-        <Text style={{fontSize: 16, fontWeight: 'bold'}}>Payable Amount: </Text>
-        <Text style={{fontSize: 16}}>{cartInfo.amount} </Text>
+      <View style={styles.view}>
+        <Text style={styles.text1}>Payable Amount: </Text>
+        <Text style={styles.text2}>{cartInfo.amount} </Text>
       </View>
 
       <TouchableOpacity
-        style={{
-          height: 60,
-          width: 200,
-          backgroundColor: theme.colors.primary,
-          borderRadius: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginTop: 20,
-        }}
+        style={styles.touchable1}
         onPress={() => {
           onPayment();
         }}>
-        <Text
-          style={{
-            color: theme.colors.surface,
-            fontSize: 20,
-            fontWeight: 'bold',
-          }}>
-          Proceed To Pay
-        </Text>
+        <Text style={styles.proceed}>Proceed To Pay</Text>
       </TouchableOpacity>
     </View>
   );
@@ -224,7 +176,7 @@ export default function DriverPayment({...props}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: core.theme.colors.surface,
     alignItems: 'center',
   },
   image: {
@@ -232,5 +184,39 @@ const styles = StyleSheet.create({
     height: 30,
     marginStart: 120,
     marginTop: 30,
+  },
+  touchable: {
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    marginTop: 50,
+    backgroundColor: core.theme.colors.primary,
+    alignSelf: 'flex-start',
+    marginStart: 35,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paytext: {
+    fontSize: 25,
+    marginTop: 200,
+    color: core.theme.colors.secondary,
+    fontWeight: 'bold',
+  },
+  view: {alignSelf: 'center', flexDirection: 'row', marginTop: 20},
+  text1: {fontSize: 16, fontWeight: 'bold'},
+  text2: {fontSize: 16},
+  touchable1: {
+    height: 60,
+    width: 200,
+    backgroundColor: core.theme.colors.primary,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  proceed: {
+    color: core.theme.colors.surface,
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 });
